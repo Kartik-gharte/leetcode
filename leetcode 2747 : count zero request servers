@@ -1,0 +1,58 @@
+import java.util.Arrays;
+import java.util.Comparator;
+
+class Solution {
+    public int[] countServers(int n, int[][] logs, int x, int[] queries) {
+        int m = logs.length;
+        int k = queries.length;
+
+        // 1. Sort logs by timestamp ascending
+        Arrays.sort(logs, Comparator.comparingInt(a -> a[1]));
+
+        // 2. Store queries alongside their original indices and sort by time
+        Integer[] queryIndices = new Integer[k];
+        for (int i = 0; i < k; i++) {
+            queryIndices[i] = i;
+        }
+        Arrays.sort(queryIndices, Comparator.comparingInt(i -> queries[i]));
+
+        // 3. Sliding window state
+        int[] serverCounts = new int[n + 1];
+        int activeServers = 0;
+        int left = 0;
+        int right = 0;
+        int[] ans = new int[k];
+
+        // 4. Process queries in ascending order of time
+        for (int idx : queryIndices) {
+            int qTime = queries[idx];
+            int windowStart = qTime - x;
+            int windowEnd = qTime;
+
+            // Expand right boundary: include logs with time <= windowEnd
+            while (right < m && logs[right][1] <= windowEnd) {
+                int serverId = logs[right][0];
+                if (serverCounts[serverId] == 0) {
+                    activeServers++;
+                }
+                serverCounts[serverId]++;
+                right++;
+            }
+
+            // Shrink left boundary: exclude logs with time < windowStart
+            while (left < m && logs[left][1] < windowStart) {
+                int serverId = logs[left][0];
+                serverCounts[serverId]--;
+                if (serverCounts[serverId] == 0) {
+                    activeServers--;
+                }
+                left++;
+            }
+
+            // Inactive servers = total servers - active servers
+            ans[idx] = n - activeServers;
+        }
+
+        return ans;
+    }
+}
