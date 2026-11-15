@@ -1,0 +1,24 @@
+class Solution {
+    public int numOfSubarrays(int[] arr) {
+        int MOD = 1_000_000_007;
+        int[] count = new int[2]; // count[0]: even prefix sums, count[1]: odd prefix sums
+        count[0] = 1; // Base case: prefix sum of 0 is even
+        
+        int prefixSum = 0;
+        long result = 0; // Use long to prevent integer overflow during addition
+        
+        for (int num : arr) {
+            prefixSum += num;
+            int parity = prefixSum % 2;
+            
+            // If current prefix sum is odd, we need previous even prefix sums.
+            // If current prefix sum is even, we need previous odd prefix sums.
+            result = (result + count[1 - parity]) % MOD;
+            
+            // Increment the count of the current prefix sum parity
+            count[parity]++;
+        }
+        
+        return (int) result;
+    }
+}
